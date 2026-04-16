@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inmate Guesser</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1 class="title">INMATE GUESSER</h1>
+
+    <div class="game-wrapper">
+
+        <div class="top-bar">
+            <div class="score-box">
+                <span class="label">SCORE:</span>
+                <span id="scoreVar">0</span>
+            </div>
+
+            <div class="status-box">
+                <span class="label">ROUND:</span>
+                <span id="roundVar">1</span>
+            </div>
+        </div>
+
+        <div class="offender-name-box">
+            <h2 id="offenderName">OFFENDER NAME HERE</h2>
+        </div>
+
+        <div class="image-wrap">
+            <img class="img" src="" id="img" alt="Offender image">
+        </div>
+
+        <div class="details-box">
+            <p><strong>YOB:</strong> <span id="yobVar">---</span></p>
+            <p><strong>RACE:</strong> <span id="raceVar">---</span></p>
+            <p><strong>GENDER:</strong> <span id="genderVar">---</span></p>
+            <p><strong>HEIGHT:</strong> <span id="heightVar">---</span></p>
+            <p><strong>WEIGHT:</strong> <span id="weightVar">---</span></p>
+            <p><strong>EYE COLOR:</strong> <span id="eyeColorVar">---</span></p>
+            <p><strong>HAIR COLOR:</strong> <span id="hairColorVar">---</span></p>
+            <p><strong>MOST RECENT INSTITUTION:</strong> <span id="institutionVar">---</span></p>
+            <p><strong>MAX POSSIBLE RELEASE DATE:</strong> <span id="releaseDateVar">---</span></p>
+        </div>
+
+        <div class="question-box">
+            <h3>Guess the Major Offense</h3>
+        </div>
+
+        <div class="choices-box">
+            <button class="choice-btn" id="choice1">Choice 1</button>
+            <button class="choice-btn" id="choice2">Choice 2</button>
+            <button class="choice-btn" id="choice3">Choice 3</button>
+            <button class="choice-btn" id="choice4">Choice 4</button>
+        </div>
+
+        <div class="bottom-buttons">
+            <button class='spin-button' id="spinButtonID" data-spin>SUBMIT GUESS</button>
+            <!-- <button class='spin-button' id="spinButtonID" data-spin>GO NEXT</button> -->
+        </div>
+
+        <div class="result-box">
+            <p id="resultMessage"></p>
+        </div>
+
+    </div>
+    <script src='server.js'></script>
+    <script>
+
+    document.getElementById("spinButtonID").addEventListener("click", async () => { 
+        await bombaclatt();
+    });
+
+    const offenderName = document.getElementById("offenderName");
+    const img = document.getElementById("img");
+
+    const yobVar = document.getElementById("yobVar");
+    const raceVar = document.getElementById("raceVar");
+    const genderVar = document.getElementById("genderVar");
+    const heightVar = document.getElementById("heightVar");
+    const weightVar = document.getElementById("weightVar");
+    const eyeColorVar = document.getElementById("eyeColorVar");
+    const hairColorVar = document.getElementById("hairColorVar");
+    const releaseDateVar = document.getElementById("releaseDateVar");
+
+    const scoreVar = document.getElementById("scoreVar");
+    const roundVar = document.getElementById("roundVar");
+    const resultMessage = document.getElementById("resultMessage");
+
+    const choiceButtons = [
+    document.getElementById("choice1"),
+    document.getElementById("choice2"),
+    document.getElementById("choice3"),
+    document.getElementById("choice4")
+    ];
+
+    const submitBtn = document.getElementById("spinButtonID");
+
+    let selectedChoice = null;
+    let correctOffense = "";
+    let score = 0;
+    let round = 1;
+    let answeredThisRound = false;
+
+    // Replace this with your real loader later
+    async function bombaclatt() {
+    if (!correctOffense || answeredThisRound) {
+        await loadNextOffender();
+    } else {
+        submitGuess();
+    }
+    }
+
+    async function loadNextOffender() {
+        answeredThisRound = false;
+        selectedChoice = null;
+        resultMessage.textContent = "";
+        resultMessage.className = "";
+        submitBtn.textContent = "SUBMIT GUESS";
+
+        choiceButtons.forEach(btn => {
+            btn.classList.remove("selected", "correct", "wrong");
+            btn.disabled = false;
+        });
+
+        try {
+            const res = await fetch("/random-case", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ageLow: 18,
+                ageHigh: 90
+            })
+            });
+
+            if (!res.ok) {
+            throw new Error("Failed to fetch offender");
+            }
+
+            const data = await res.json();
+            loadOffender(data);
+        } catch (err) {
+            console.error(err);
+            resultMessage.textContent = "Failed to load offender.";
+            resultMessage.className = "bad";
+        }
+    }
+
+    function loadOffender(data) {
+    offenderName.textContent = data.name || "---";
+    img.src = data.image || "";
+    yobVar.textContent = data.yob || "---";
+    raceVar.textContent = data.race || "---";
+    genderVar.textContent = data.gender || "---";
+    heightVar.textContent = data.height || "---";
+    weightVar.textContent = data.weight || "---";
+    eyeColorVar.textContent = data.eyeColor || "---";
+    hairColorVar.textContent = data.hairColor || "---";
+    releaseDateVar.textContent = data.releaseDate || "---";
+
+    correctOffense = data.offense || "";
+
+    choiceButtons.forEach((btn, i) => {
+        btn.textContent = data.choices[i] || `Choice ${i + 1}`;
+    });
+    }
+
+    function submitGuess() {
+    if (!selectedChoice) {
+        resultMessage.textContent = "Pick an answer first.";
+        resultMessage.className = "warning";
+        return;
+    }
+
+    answeredThisRound = true;
+
+    choiceButtons.forEach(btn => {
+        btn.disabled = true;
+
+        if (btn.textContent === correctOffense) {
+        btn.classList.add("correct");
+        }
+
+        if (btn.textContent === selectedChoice && selectedChoice !== correctOffense) {
+        btn.classList.add("wrong");
+        }
+    });
+
+    if (selectedChoice === correctOffense) {
+        score += 1;
+        scoreVar.textContent = score;
+        resultMessage.textContent = "Correct.";
+        resultMessage.className = "good";
+    } else {
+        resultMessage.textContent = `Wrong. Correct answer: ${correctOffense}`;
+        resultMessage.className = "bad";
+    }
+
+    round += 1;
+    roundVar.textContent = round;
+    submitBtn.textContent = "NEXT ROUND";
+    }
+
+    choiceButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (answeredThisRound) return;
+
+        selectedChoice = btn.textContent;
+
+        choiceButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+    });
+    });
+
+    // Demo pool
+    function getMockOffender() {
+    const pool = [
+        {
+        name: "AARON, ANTHONY TODD",
+        image: "https://via.placeholder.com/350x400?text=Offender+Image",
+        yob: "1959",
+        race: "BLACK",
+        gender: "MALE",
+        height: "5'07''",
+        weight: "160",
+        eyeColor: "BROWN",
+        hairColor: "BLACK",
+        releaseDate: "03/12/2047",
+        offense: "ATMPT MURDER",
+        choices: shuffle([
+            "ATMPT MURDER",
+            "BURGLARY",
+            "FRAUD",
+            "AGGRAVATED ASSAULT"
+        ])
+        },
+        {
+        name: "DOE, JAMES ALLEN",
+        image: "https://via.placeholder.com/350x400?text=Case+2",
+        yob: "1984",
+        race: "WHITE",
+        gender: "MALE",
+        height: "6'00''",
+        weight: "190",
+        eyeColor: "BLUE",
+        hairColor: "BROWN",
+        releaseDate: "08/18/2033",
+        offense: "BURGLARY",
+        choices: shuffle([
+            "BURGLARY",
+            "ROBBERY",
+            "ARSON",
+            "FRAUD"
+        ])
+        },
+        {
+        name: "JOHNSON, TERRY LEE",
+        image: "https://via.placeholder.com/350x400?text=Case+3",
+        yob: "1977",
+        race: "BLACK",
+        gender: "MALE",
+        height: "5'11''",
+        weight: "205",
+        eyeColor: "BROWN",
+        hairColor: "BLACK",
+        releaseDate: "11/01/2039",
+        offense: "ROBBERY",
+        choices: shuffle([
+            "ROBBERY",
+            "BURGLARY",
+            "KIDNAPPING",
+            "FRAUD"
+        ])
+        }
+    ];
+
+    return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function shuffle(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+    }
+
+    // Load first round on startup
+    loadNextOffender();
+    </script>
+</body>
+</html>
