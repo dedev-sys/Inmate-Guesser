@@ -42,7 +42,7 @@
             <p><strong>EYE COLOR:</strong> <span id="eyeColorVar">---</span></p>
             <p><strong>HAIR COLOR:</strong> <span id="hairColorVar">---</span></p>
             <p><strong>MAX POSSIBLE RELEASE DATE:</strong> <span id="releaseDateVar">---</span></p>
-            <p><strong>POPULARITY LEVEL</strong> <span id="popularityVar">---</span></p>
+            <p><strong>RARITY LEVEL</strong> <span id="rarityVar">---</span></p>
             <p><strong>DANGER SCORE</strong> <span id="dangerVar">---</span></p>
         </div>
 
@@ -85,8 +85,8 @@
     const eyeColorVar = document.getElementById("eyeColorVar");
     const hairColorVar = document.getElementById("hairColorVar");
     const releaseDateVar = document.getElementById("releaseDateVar");
-    const popularityVar = document.getElementById("popularityVar");
-    const dangerVar = document.getElementById("dangerVar");
+    const rarityscoreVar = document.getElementById("rarityVar");
+    const dangerscoreVar = document.getElementById("dangerVar");
 
     const scoreVar = document.getElementById("scoreVar");
     const roundVar = document.getElementById("roundVar");
@@ -154,25 +154,28 @@
     }
 
     function loadOffender(data) {
-    // offenderName.textContent = data.name || "---";
-    offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
-    img.src = data.image || "";
-    yobVar.textContent = data.yob.match(/\d{4}$/)?.[0] || "" || "---";
-    raceVar.textContent = data.race || "---";
-    genderVar.textContent = data.gender || "---";
-    heightVar.textContent = data.height || "---";
-    weightVar.textContent = data.weight || "---";
-    eyeColorVar.textContent = data.eyeColor || "---";
-    hairColorVar.textContent = data.hairColor || "---";
-    releaseDateVar.textContent = data.releaseDate || "---";
-    // popularityVar.textContent = data.releaseDate || "---";
-    // dangerVar.textContent = data.releaseDate || "---";
+        
+        const collectibleStats = getOrCreateCollectibleStats(data.name, data.offense);
 
-    correctOffense = data.offense || "";
+        // offenderName.textContent = data.name || "---";
+        offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
+        img.src = data.image || "";
+        yobVar.textContent = data.yob.match(/\d{4}$/)?.[0] || "" || "---";
+        raceVar.textContent = data.race || "---";
+        genderVar.textContent = data.gender || "---";
+        heightVar.textContent = data.height || "---";
+        weightVar.textContent = data.weight || "---";
+        eyeColorVar.textContent = data.eyeColor || "---";
+        hairColorVar.textContent = data.hairColor || "---";
+        releaseDateVar.textContent = data.releaseDate || "---";
+        rarityScoreVar.textContent = collectibleStats.rarityScore || "---";
+        dangerScoreVar.textContent = collectibleStats.dangerScore || "---";
 
-    choiceButtons.forEach((btn, i) => {
-        btn.textContent = data.choices[i] || `Choice ${i + 1}`;
-    });
+        correctOffense = data.offense || "";
+
+        choiceButtons.forEach((btn, i) => {
+            btn.textContent = data.choices[i] || `Choice ${i + 1}`;
+        });
     }
 
     function submitGuess() {
