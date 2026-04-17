@@ -113,67 +113,131 @@
 
 
     function normalizeOffense(str) {
-      return (str || "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toUpperCase();
+        return (str || "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase();
+        }
+
+        function normalizeName(str) {
+        return (str || "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase();
+        }
+
+        function getOffenderStorageKey(offenderName) {
+        return `offenderStats_${normalizeName(offenderName)}`;
+        }
+
+        // Higher numbers are rarer, but most rolls stay lower.
+        // This returns mostly 1–60, with high values much less common.
+        function weightedRarityRoll1to60() {
+        const r = Math.random();
+        const weighted = Math.pow(r, 2.35); // heavier toward low values
+        return Math.floor(1 + weighted * 59);
+        }
+
+        function clamp(num, min, max) {
+        return Math.max(min, Math.min(max, num));
+        }
+
+        function varyScore(base, range = 10) {
+        const variation = Math.floor(Math.random() * (range * 2 + 1)) - range;
+        return clamp(base + variation, 1, 100);
+        }
+
+        function generateRarityScore(offense) {
+        const normalized = normalizeOffense(offense);
+
+        const exactScores = {
+            "BURGLARY": 10,
+            "FRAUD": 10,
+            "ROBBERY": 20,
+            "AGGRAV ASSAULT": 40,
+            "ARMED ROBBERY": 50,
+            "MURDER": 70,
+            "ATMPT MURDER": 65,
+            "ARSON": 50,
+            "DRVNG HABTL VIOLATOR": 5,
+            "HABIT TRAF VIOL/OTHER": 10,
+            "POSS OF FIREARM DUR CRIME": 20,
+            "POSS W INT DIST COCAINE": 40,
+            "POSS W INT DIST METH": 50,
+            "POSS W INT DIST FENTANYL": 60,
+            "POSS W INT DIST MARIJUANA": 20,
+            "VIOL DNGROUS DRGS ACT": 40,
+            "CRMNL DAMAGE 2ND DEGREE": 30,
+            "MURDER 2ND DEGREE": 65,
+            "POSS FIREARM CONVCT FELON": 30,
+            "AGGRAV BATTERY": 50,
+            "BURG BEF 7/1/12": 30,
+            "OBSTR OF LAW ENF OFFICER": 25,
+            "CHILD MOLESTATION": 85,
+            "THEFT BY TAKING": 20,
+            "AGGRAV ASSAULT PEACE OFCR": 30,
+            "VOLUNTARY MANSLAUGHTER": 50,
+            "INVOLUNTARY MANSLAUGHTER": 65,
+            "THEFT BY REC STOLEN PROP": 20,
+            "AGGRAV SEXUAL BATTERY": 60,
+            "POSS NARCOTICS OPIATES": 40,
+            "POSS METHAMPHETAMINE": 40,
+            "S/D COCAINE": 30,
+            "FORG 1ST BEF 7/1/12": 20,
+            "POSS COCAINE": 30,
+            "POSS OF MARIJUANA": 15,
+            "SEX EXPLOITATION CHILD": 85,
+            "TRAF METHAMPH 28-199 GM": 30,
+            "RAPE": 80,
+            "FAMILY VIOLENCE BATTERY": 40,
+            "DOMESTIC VIOLENCE": 45,
+            "TRAF COCAINE LESS 200 GM": 25,
+            "TRAF COCAINE MORE 200 GM": 45,
+            "TRAF METHAMPH 400+ GM": 45,
+            "TRAF METH LESS 400 GM": 25,
+            "TERRORIST THREATS & ACTS": 70,
+            "ANIMAL CRUELTY": 75,
+            "CHILD ABUSE": 75,
+            "MISC CORRECTIONL INST OFF": 20,
+            "BURG 2ND AFT 6/30/12": 35,
+            "KIDNAPPING": 80
+        };
+        
+
+        const base = exactScores[normalized];
+
+        // ✅ THIS is the key change
+        if (base !== undefined) {
+            return varyScore(base, 15);
+        }
+        // 0 means: use the standard weighted common roll
+        else if (base === 0) {
+            return weightedRarityRoll1to60();
+        }
+
+        // fallback logic (same idea as danger)
+        //   if (normalized.includes("MURDER")) return varyScore(80, 15);
+        //   if (normalized.includes("KIDNAP")) return varyScore(78, 15);
+        //   if (normalized.includes("RAPE")) return varyScore(85, 15);
+        //   if (normalized.includes("MOLEST")) return varyScore(92, 10);
+        //   if (normalized.includes("CHILD")) return varyScore(75, 15);
+        //   if (normalized.includes("ROBBERY")) return varyScore(42, 15);
+        //   if (normalized.includes("ASSAULT")) return varyScore(58, 15);
+        //   if (normalized.includes("ARSON")) return varyScore(40, 15);
+        //   if (normalized.includes("FRAUD")) return varyScore(12, 10);
+        //   if (normalized.includes("BURG")) return varyScore(25, 15);
+        //   if (normalized.includes("THEFT")) return varyScore(15, 10);
+        //   if (normalized.includes("COCAINE")) return varyScore(38, 15);
+        //   if (normalized.includes("METH")) return varyScore(40, 15);
+        //   if (normalized.includes("FENTANYL")) return varyScore(68, 15);
+        //   if (normalized.includes("MARIJUANA")) return varyScore(15, 10);
+        //   if (normalized.includes("FIREARM")) return varyScore(45, 15);
+        //   if (normalized.includes("TERROR")) return varyScore(75, 15);
+
+        // default (NOT auto rare anymore)
+        return varyScore(35, 20);
     }
 
-    function normalizeName(str) {
-      return (str || "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toUpperCase();
-    }
-
-    function getOffenderStorageKey(offenderName) {
-      return `offenderStats_${normalizeName(offenderName)}`;
-    }
-
-    // Higher numbers are rarer, but most rolls stay lower.
-    // This returns mostly 1–60, with high values much less common.
-    function weightedRarityRoll1to60() {
-      const r = Math.random();
-      const weighted = Math.pow(r, 2.35); // heavier toward low values
-      return Math.floor(1 + weighted * 59);
-    }
-
-    function generateRarityScore(offense) {
-      const normalized = normalizeOffense(offense);
-
-      // Your known/common crime pool
-      const knownCrimePool = new Set([
-        "BURGLARY",
-        "FRAUD",
-        "ROBBERY",
-        "AGGRAVATED ASSAULT",
-        "ARMED ROBBERY",
-        "MURDER",
-        "ATMPT MURDER",
-        "ARSON",
-        "KIDNAPPING"
-      ]);
-
-      // If the crime is NOT in your pool, force it to be rarer
-      if (!knownCrimePool.has(normalized)) {
-        // guaranteed high rarity band for unknown offenses
-        return Math.floor(70 + Math.random() * 31); // 70–100
-      }
-
-      // Mostly common rarity: 1–60, weighted so high scores are rarer
-      let score = weightedRarityRoll1to60();
-
-      // Tiny bonus jackpot chances to make collectibles more exciting
-      const jackpotRoll = Math.random();
-
-      if (jackpotRoll < 0.015) {
-        score = Math.max(score, Math.floor(85 + Math.random() * 16)); // 85–100
-      } else if (jackpotRoll < 0.06) {
-        score = Math.max(score, Math.floor(61 + Math.random() * 20)); // 61–80
-      }
-
-      return Math.min(score, 100);
-    }
 
     // puts danger score within +/- 15 points of offense
     function varyScore(base, range = 15) {
@@ -192,55 +256,55 @@
       // Exact or near-exact mapping first
       const exactScores = {
         "BURGLARY": 10,
-        "FRAUD": 5,
-        "ROBBERY": 9,
-        "AGGRAV ASSAULT": 10,
-        "ARMED ROBBERY": 7,
-        "MURDER": 3,
-        "ATMPT MURDER": 2,
-        "ARSON": 2,
-        "DRVNG HABTL VIOLATOR": 8,
-        "HABIT TRAF VIOL/OTHER": 6,
-        "POSS OF FIREARM DUR CRIME": 2,
-        "POSS W INT DIST COCAINE": 4,
-        "POSS W INT DIST METH": 3,
-        "POSS W INT DIST FENTANYL": 2,
-        "POSS W INT DIST MARIJUANA": 6,
-        "VIOL DNGROUS DRGS ACT": 2,
-        "CRMNL DAMAGE 2ND DEGREE": 4,
-        "MURDER 2ND DEGREE": 1,
-        "POSS FIREARM CONVCT FELON": 7,
-        "AGGRAV BATTERY": 8,
-        "BURG BEF 7/1/12": 2,
-        "OBSTR OF LAW ENF OFFICER": 5,
-        "CHILD MOLESTATION": 1,
-        "THEFT BY TAKING": 3,
-        "AGGRAV ASSAULT PEACE OFCR": 3,
-        "VOLUNTARY MANSLAUGHTER": 2,
-        "INVOLUNTARY MANSLAUGHTER": 1,
-        "THEFT BY REC STOLEN PROP": 3,
-        "AGGRAV SEXUAL BATTERY": 2,
-        "POSS NARCOTICS OPIATES": 4,
-        "POSS METHAMPHETAMINE": 3,
-        "S/D COCAINE": 1,
-        "FORG 1ST BEF 7/1/12": 1,
-        "POSS COCAINE": 3,
-        "POSS OF MARIJUANA": 6,
-        "SEX EXPLOITATION CHILD": 3,
-        "TRAF METHAMPH 28-199 GM": 3,
-        "RAPE": 2,
-        "FAMILY VIOLENCE BATTERY": 3,
-        "DOMESTIC VIOLENCE": 5,
-        "TRAF COCAINE LESS 200 GM": 1,
-        "TRAF COCAINE MORE 200 GM": 1,
-        "TRAF METHAMPH 400+ GM": 1,
-        "TRAF METH LESS 400 GM": 1,
-        "TERRORIST THREATS & ACTS": 2,
-        "ANIMAL CRUELTY": 1,
-        "CHILD ABUSE": 2,
-        "MISC CORRECTIONL INST OFF": 3,
-        "BURG 2ND AFT 6/30/12": 2,
-        "KIDNAPPING": 2
+        "FRAUD": 10,
+        "ROBBERY": 40,
+        "AGGRAV ASSAULT": 60,
+        "ARMED ROBBERY": 70,
+        "MURDER": 85,
+        "ATMPT MURDER": 75,
+        "ARSON": 40,
+        "DRVNG HABTL VIOLATOR": 5,
+        "HABIT TRAF VIOL/OTHER": 10,
+        "POSS OF FIREARM DUR CRIME": 30,
+        "POSS W INT DIST COCAINE": 50,
+        "POSS W INT DIST METH": 50,
+        "POSS W INT DIST FENTANYL": 70,
+        "POSS W INT DIST MARIJUANA": 20,
+        "VIOL DNGROUS DRGS ACT": 40,
+        "CRMNL DAMAGE 2ND DEGREE": 30,
+        "MURDER 2ND DEGREE": 60,
+        "POSS FIREARM CONVCT FELON": 70,
+        "AGGRAV BATTERY": 70,
+        "BURG BEF 7/1/12": 40,
+        "OBSTR OF LAW ENF OFFICER": 25,
+        "CHILD MOLESTATION": 95,
+        "THEFT BY TAKING": 10,
+        "AGGRAV ASSAULT PEACE OFCR": 75,
+        "VOLUNTARY MANSLAUGHTER": 60,
+        "INVOLUNTARY MANSLAUGHTER": 30,
+        "THEFT BY REC STOLEN PROP": 20,
+        "AGGRAV SEXUAL BATTERY": 75,
+        "POSS NARCOTICS OPIATES": 40,
+        "POSS METHAMPHETAMINE": 40,
+        "S/D COCAINE": 30,
+        "FORG 1ST BEF 7/1/12": 30,
+        "POSS COCAINE": 30,
+        "POSS OF MARIJUANA": 5,
+        "SEX EXPLOITATION CHILD": 95,
+        "TRAF METHAMPH 28-199 GM": 40,
+        "RAPE": 85,
+        "FAMILY VIOLENCE BATTERY": 55,
+        "DOMESTIC VIOLENCE": 55,
+        "TRAF COCAINE LESS 200 GM": 35,
+        "TRAF COCAINE MORE 200 GM": 45,
+        "TRAF METHAMPH 400+ GM": 45,
+        "TRAF METH LESS 400 GM": 35,
+        "TERRORIST THREATS & ACTS": 75,
+        "ANIMAL CRUELTY": 85,
+        "CHILD ABUSE": 65,
+        "MISC CORRECTIONL INST OFF": 20,
+        "BURG 2ND AFT 6/30/12": 35,
+        "KIDNAPPING": 80
       };
 
         const base = exactScores[normalized];
@@ -352,8 +416,8 @@
         eyeColorVar.textContent = data.eyeColor || "---";
         hairColorVar.textContent = data.hairColor || "---";
         releaseDateVar.textContent = data.releaseDate || "---";
-        rarityScoreVar.textContent = collectibleStats.rarityScore || "---";
-        dangerScoreVar.textContent = collectibleStats.dangerScore || "---";
+        rarityScoreVar.textContent = collectibleStats.rarityScore + " / 100" || "---";
+        dangerScoreVar.textContent = collectibleStats.dangerScore + " / 100" || "---";
 
         correctOffense = data.offense || "";
 
