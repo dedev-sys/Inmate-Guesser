@@ -30,6 +30,7 @@
         </div>
 
         <div class="image-wrap">
+            <div class="image-loader" id="imageLoader"></div>
             <img class="img" src="" id="img" alt="Offender image">
         </div>
 
@@ -42,8 +43,8 @@
             <p><strong>EYE COLOR:</strong> <span id="eyeColorVar">---</span></p>
             <p><strong>HAIR COLOR:</strong> <span id="hairColorVar">---</span></p>
             <p><strong>MAX POSSIBLE RELEASE DATE:</strong> <span id="releaseDateVar">---</span></p>
-            <p><strong>RARITY LEVEL</strong> <span id="rarityVar">---</span></p>
-            <p><strong>DANGER SCORE</strong> <span id="dangerVar">---</span></p>
+            <p><strong>RARITY LEVEL:</strong> <span id="rarityVar">---</span></p>
+            <p><strong>DANGER SCORE:</strong> <span id="dangerVar">---</span></p>
         </div>
 
         <div class="question-box">
@@ -87,6 +88,8 @@
     const releaseDateVar = document.getElementById("releaseDateVar");
     const rarityScoreVar = document.getElementById("rarityVar");
     const dangerScoreVar = document.getElementById("dangerVar");
+    const imageWrap = document.getElementById("imageWrap");
+    const imageLoader = document.getElementById("imageLoader");
 
     const scoreVar = document.getElementById("scoreVar");
     const roundVar = document.getElementById("roundVar");
@@ -107,6 +110,15 @@
     let round = 1;
     let answeredThisRound = false;
 
+    // -- LOADING ANIM ----------
+
+    function showImageLoading() {
+        imageWrap.classList.add("loading");
+    }
+
+    function hideImageLoading() {
+        imageWrap.classList.remove("loading");
+    }
 
 
     // --- RARITY SCORES ----------------------------------------------------
@@ -376,6 +388,9 @@
             btn.disabled = false;
         });
 
+        showImageLoading();
+        img.src = "";
+
         try {
             const res = await fetch("/random-case", {
             method: "POST",
@@ -404,18 +419,25 @@
     function loadOffender(data) {
         
         const collectibleStats = getOrCreateCollectibleStats(data.name, data.offense);
+        const releaseDateStat = data.releaseDate;
 
         // offenderName.textContent = data.name || "---";
         offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
-        img.src = data.image || "";
-        yobVar.textContent = data.yob.match(/\d{4}$/)?.[0] || "" || "---";
+        img.onload = () => {
+            hideImageLoading();
+        };
+        img.onerror = () => {
+            hideImageLoading();
+        };
+        img.src = data.image || ""; 
+        yobVar.textContent = data.yob || "---";
         raceVar.textContent = data.race || "---";
         genderVar.textContent = data.gender || "---";
         heightVar.textContent = data.height || "---";
         weightVar.textContent = data.weight || "---";
         eyeColorVar.textContent = data.eyeColor || "---";
         hairColorVar.textContent = data.hairColor || "---";
-        releaseDateVar.textContent = data.releaseDate || "---";
+        releaseDateVar.textContent = releaseDateStat.match(/\d{4}$/)?.[0] || "" || "---";
         rarityScoreVar.textContent = collectibleStats.rarityScore + " / 100" || "---";
         dangerScoreVar.textContent = collectibleStats.dangerScore + " / 100" || "---";
 
