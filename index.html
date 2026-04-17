@@ -157,7 +157,7 @@
     // offenderName.textContent = data.name || "---";
     offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
     img.src = data.image || "";
-    yobVar.textContent = data.yob || "---";
+    yobVar.textContent = data.yob.match(/\d{4}$/)?.[0] || "" || "---";
     raceVar.textContent = data.race || "---";
     genderVar.textContent = data.gender || "---";
     heightVar.textContent = data.height || "---";
