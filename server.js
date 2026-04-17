@@ -1,159 +1,3 @@
-// const puppeteer = require("puppeteer");
-// const cheerio = require("cheerio");
-// const express = require("express");
-
-// const app = express();
-
-// app.use(express.json());
-// app.use(express.static("."));
-
-// function shuffle(arr) {
-//   const copy = [...arr];
-//   for (let i = copy.length - 1; i > 0; i--) {
-//     const j = Math.floor(Math.random() * (i + 1));
-//     [copy[i], copy[j]] = [copy[j], copy[i]];
-//   }
-//   return copy;
-// }
-
-// function buildChoices(correctOffense) {
-//   const pool = [
-//     "BURGLARY",
-//     "FRAUD",
-//     "ROBBERY",
-//     "AGGRAVATED ASSAULT",
-//     "ARMED ROBBERY",
-//     "MURDER",
-//     "ATMPT MURDER",
-//     "ARSON",
-//     "KIDNAPPING"
-//   ].filter(x => x !== correctOffense);
-
-//   const wrong = shuffle(pool).slice(0, 3);
-//   return shuffle([correctOffense, ...wrong]);
-// }
-
-// app.post("/random-case", async (req, res) => {
-//   const { ageLow = 18, ageHigh = 90 } = req.body;
-
-//   let browser;
-
-//   try {
-//     browser = await puppeteer.launch({ headless: "new" });
-//     const page = await browser.newPage();
-
-//     await page.goto("https://services.gdc.ga.gov/GDC/OffenderQuery/jsp/OffQryForm.jsp", {
-//       waitUntil: "networkidle2"
-//     });
-
-//     await page.click("#vAgeLow", { clickCount: 3 });
-//     await page.type("#vAgeLow", String(ageLow));
-
-//     await page.click("#vAgeHigh", { clickCount: 3 });
-//     await page.type("#vAgeHigh", String(ageHigh));
-
-//     await Promise.all([
-//       page.click("#NextButton2"),
-//       page.waitForNavigation({ waitUntil: "networkidle2" })
-//     ]);
-
-//     await page.waitForSelector('input[name="btn1"]');
-
-//     const buttons = await page.$$('input[name="btn1"]');
-
-//     if (!buttons.length) {
-//       throw new Error("No buttons found");
-//     }
-
-//     const randomIndex = Math.floor(Math.random() * buttons.length);
-//     console.log("Fetching inmate index:", randomIndex);
-
-//     await Promise.all([
-//       buttons[randomIndex].click(),
-//       page.waitForNavigation({ waitUntil: "networkidle2" })
-//     ]);
-
-//     const html = await page.content();
-//     const $ = cheerio.load(html);
-
-//     const imgSrc = $('img[alt="Image of the offender"]').attr("src") || "";
-//     const image = imgSrc.startsWith("http")
-//       ? imgSrc
-//       : `https://services.gdc.ga.gov${imgSrc}`;
-
-//     const nameRaw = $("h4").first().text().trim();
-//     const name = nameRaw.replace("NAME:", "").trim();
-
-//     function getValue(label) {
-//       const strong = $("strong.offender")
-//         .filter((i, el) => $(el).text().includes(label))
-//         .first();
-
-//       if (!strong.length) {
-//         return "";
-//       }
-
-//       return strong.parent().text()
-//         .replace(strong.text(), "")
-//         .replace(/\s+/g, " ")
-//         .trim();
-//     }
-
-//     const yob = getValue("YOB");
-//     const race = getValue("RACE");
-//     const gender = getValue("GENDER");
-//     const height = getValue("HEIGHT");
-//     const weight = getValue("WEIGHT");
-//     const eyeColor = getValue("EYE COLOR");
-//     const hairColor = getValue("HAIR COLOR");
-//     const offense = getValue("MAJOR OFFENSE");
-//     const institution = getValue("MOST RECENT INSTITUTION");
-//     const releaseDate = getValue("MAX POSSIBLE RELEASE DATE");
-
-//     const offenderData = {
-//       name,
-//       image,
-//       yob,
-//       race,
-//       gender,
-//       height,
-//       weight,
-//       eyeColor,
-//       hairColor,
-//       offense,
-//       institution,
-//       releaseDate,
-//       choices: buildChoices(offense)
-//     };
-
-//     console.log(offenderData);
-//     res.json(offenderData);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Scrape failed" });
-//   } finally {
-//     if (browser) {
-//       await browser.close();
-//     }
-//   }
-// });
-
-// const PORT = process.env.PORT || 3000;
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
-
-
-
-
-
-
-
-
-
-
-
 const puppeteer = require("puppeteer-core");
 const chromium = require("@sparticuz/chromium");
 const cheerio = require("cheerio");
@@ -172,14 +16,99 @@ function shuffle(arr) {
   return copy;
 }
 
-function buildChoices(correctOffense) {
-  const pool = [
-    "BURGLARY", "FRAUD", "ROBBERY", "AGGRAVATED ASSAULT",
-    "ARMED ROBBERY", "MURDER", "ATMPT MURDER", "ARSON", "KIDNAPPING"
-  ].filter(x => x !== correctOffense);
-  const wrong = shuffle(pool).slice(0, 3);
-  return shuffle([correctOffense, ...wrong]);
+// function buildChoices(correctOffense) {
+//   const pool = [
+//     "BURGLARY", "FRAUD", "ROBBERY", "AGGRAVATED ASSAULT",
+//     "ARMED ROBBERY", "MURDER", "ATMPT MURDER", "ARSON", "KIDNAPPING", "DRVNG HABTL VIOLATOR"
+//   ].filter(x => x !== correctOffense);
+//   const wrong = shuffle(pool).slice(0, 3);
+//   return shuffle([correctOffense, ...wrong]);
+// }
+
+function normalizeOffense(str) {
+  return (str || "").replace(/\s+/g, " ").trim().toUpperCase();
 }
+
+function weightedPick(pool) {
+  const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+  let random = Math.random() * totalWeight;
+
+  for (const item of pool) {
+    random -= item.weight;
+    if (random <= 0) {
+      return item;
+    }
+  }
+
+  return pool[pool.length - 1];
+}
+
+
+function buildChoices(correctOffense) {
+  const correct = normalizeOffense(correctOffense);
+
+  const wrongAnswerPool = [
+    { offense: "BURGLARY", weight: 9 },
+    { offense: "FRAUD", weight: 5 },
+    { offense: "ROBBERY", weight: 9 },
+    { offense: "AGGRAV ASSAULT", weight: 10 },
+    { offense: "ARMED ROBBERY", weight: 7 },
+    { offense: "MURDER", weight: 3 },
+    { offense: "ATMPT MURDER", weight: 2 },
+    { offense: "ARSON", weight: 2 },
+    { offense: "DRVNG HABTL VIOLATOR", weight: 8 },
+    { offense: "HABIT TRAF VIOL/OTHER", weight: 6 },
+    { offense: "POSS OF FIREARM DUR CRIME", weight: 2 },
+    { offense: "POSS W INT DIST COCAINE", weight: 4 },
+    { offense: "POSS W INT DIST METH", weight: 3 },
+    { offense: "POSS W INT DIST FENTANYL", weight: 2 },
+    { offense: "VIOL DNGROUS DRGS ACT", weight: 2 },
+    { offense: "CRMNL DAMAGE 2ND DEGREE", weight: 4 },
+    { offense: "MURDER 2ND DEGREE", weight: 1 },
+    { offense: "POSS FIREARM CONVCT FELON", weight: 7 },
+    { offense: "AGGRAV BATTERY", weight: 8 },
+    { offense: "BURG BEF 7/1/12", weight: 2 },
+    { offense: "OBSTR OF LAW ENF OFFICER", weight: 5 },
+    { offense: "CHILD MOLESTATION", weight: 1 },
+    { offense: "THEFT BY TAKING", weight: 3 },
+    { offense: "AGGRAV ASSAULT PEACE OFCR", weight: 3 },
+    { offense: "VOLUNTARY MANSLAUGHTER", weight: 2 },
+    { offense: "INVOLUNTARY MANSLAUGHTER", weight: 1 },
+    { offense: "THEFT BY REC STOLEN PROP", weight: 3 },
+    { offense: "AGGRAV SEXUAL BATTERY", weight: 2 },
+    { offense: "POSS NARCOTICS OPIATES", weight: 4 },
+    { offense: "POSS METHAMPHETAMINE", weight: 3 },
+    { offense: "S/D COCAINE", weight: 1 },
+    { offense: "FORG 1ST BEF 7/1/12", weight: 1 },
+    { offense: "POSS COCAINE", weight: 3 },
+    // { offense: "SEX EXPLOITATION CHILD", weight: 1 },
+    { offense: "KIDNAPPING", weight: 2 }
+  ]
+    .map(item => ({
+      offense: normalizeOffense(item.offense),
+      weight: item.weight
+    }))
+    .filter(item => item.offense !== correct);
+
+  const chosenWrong = [];
+  const used = new Set();
+
+  while (chosenWrong.length < 3 && wrongAnswerPool.length > 0) {
+    const available = wrongAnswerPool.filter(item => !used.has(item.offense));
+    if (!available.length) break;
+
+    const picked = weightedPick(available);
+    chosenWrong.push(picked.offense);
+    used.add(picked.offense);
+  }
+
+  return shuffle([correct, ...chosenWrong]);
+}
+
+
+
+
+
 
 app.post("/random-case", async (req, res) => {
   const { ageLow = 18, ageHigh = 90 } = req.body;
@@ -232,6 +161,29 @@ app.post("/random-case", async (req, res) => {
     await page.waitForSelector("#vAgeHigh", { timeout: 10000 });
     await page.click("#vAgeHigh", { clickCount: 3 });
     await page.type("#vAgeHigh", String(ageHigh));
+
+
+    // RANDOMIZE SEARCH
+
+    // Generate random letters
+    const randomFirstLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    const randomLastLetter  = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+
+    console.log("Random query:", randomFirstLetter, randomLastLetter);
+
+    // Fill FIRST NAME
+    await page.waitForSelector("#vFirstName", { timeout: 10000 });
+    await page.click("#vFirstName", { clickCount: 3 });
+    await page.type("#vFirstName", randomFirstLetter);
+
+    // Fill LAST NAME
+    await page.waitForSelector("#vLastName", { timeout: 10000 });
+    await page.click("#vLastName", { clickCount: 3 });
+    await page.type("#vLastName", randomLastLetter);
+
+
+    // -----------------------------
+
 
     await page.waitForSelector("#NextButton2", { timeout: 10000 });
     await Promise.all([
@@ -327,3 +279,11 @@ app.post("/random-case", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// THE BAD
+
+// Page too zoomed in, not getting Random names, need to make offense pool much bigger for wrong answers, make loading faster, block answering before laod.
+
+// THE GOOD
+
+// Add vais, epstein, diddy, EDP, david, any other popular prisoners, DANGER score and other in html
