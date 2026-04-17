@@ -42,8 +42,8 @@
             <p><strong>EYE COLOR:</strong> <span id="eyeColorVar">---</span></p>
             <p><strong>HAIR COLOR:</strong> <span id="hairColorVar">---</span></p>
             <p><strong>MAX POSSIBLE RELEASE DATE:</strong> <span id="releaseDateVar">---</span></p>
-            <p><strong>POPULARITY LEVEL</strong> <span id="releaseDateVar">---</span></p>
-            <p><strong>DANGER SCORE</strong> <span id="releaseDateVar">---</span></p>
+            <p><strong>POPULARITY LEVEL</strong> <span id="popularityVar">---</span></p>
+            <p><strong>DANGER SCORE</strong> <span id="dangerVar">---</span></p>
         </div>
 
         <div class="question-box">
@@ -85,6 +85,8 @@
     const eyeColorVar = document.getElementById("eyeColorVar");
     const hairColorVar = document.getElementById("hairColorVar");
     const releaseDateVar = document.getElementById("releaseDateVar");
+    const popularityVar = document.getElementById("popularityVar");
+    const dangerVar = document.getElementById("dangerVar");
 
     const scoreVar = document.getElementById("scoreVar");
     const roundVar = document.getElementById("roundVar");
@@ -152,7 +154,8 @@
     }
 
     function loadOffender(data) {
-    offenderName.textContent = data.name || "---";
+    // offenderName.textContent = data.name || "---";
+    offenderName.textContent = "INMATE" + Math.floor(Math.random() * (99999 - 11111 + 1)) + 11111;
     img.src = data.image || "";
     yobVar.textContent = data.yob || "---";
     raceVar.textContent = data.race || "---";
@@ -162,6 +165,8 @@
     eyeColorVar.textContent = data.eyeColor || "---";
     hairColorVar.textContent = data.hairColor || "---";
     releaseDateVar.textContent = data.releaseDate || "---";
+    // popularityVar.textContent = data.releaseDate || "---";
+    // dangerVar.textContent = data.releaseDate || "---";
 
     correctOffense = data.offense || "";
 

@@ -81,7 +81,16 @@ function buildChoices(correctOffense) {
     { offense: "S/D COCAINE", weight: 1 },
     { offense: "FORG 1ST BEF 7/1/12", weight: 1 },
     { offense: "POSS COCAINE", weight: 3 },
-    // { offense: "SEX EXPLOITATION CHILD", weight: 1 },
+    { offense: "SEX EXPLOITATION CHILD", weight: 3 },
+    { offense: "TRAF METHAMPH 28-199 GM", weight: 3 },
+    { offense: "RAPE", weight: 2 },
+    { offense: "FAMILY VIOLENCE BATTERY", weight: 3 },
+    { offense: "DOMESTIC VIOLENCE", weight: 5 },
+    { offense: "TRAF COCAINE LESS 200 GM", weight: 1 },
+    { offense: "TRAF COCAINE MORE 200 GM", weight: 1 },
+    { offense: "TERRORIST THREATS & ACTS", weight: 2 },
+    { offense: "ANIMAL CRUELTY", weight: 1 },
+    { offense: "CHILD ABUSE", weight: 2 },
     { offense: "KIDNAPPING", weight: 2 }
   ]
     .map(item => ({
@@ -282,7 +291,7 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // THE BAD
 
-// Page too zoomed in, not getting Random names, need to make offense pool much bigger for wrong answers, make loading faster, block answering before laod.
+// Page too zoomed in, make loading faster, block answering before laod and make loading symbol replace picture.
 
 // THE GOOD
 
