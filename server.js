@@ -62,6 +62,7 @@ function buildChoices(correctOffense) {
     { offense: "POSS W INT DIST COCAINE", weight: 4 },
     { offense: "POSS W INT DIST METH", weight: 3 },
     { offense: "POSS W INT DIST FENTANYL", weight: 2 },
+    { offense: "POSS W INT DIST MARIJUANA", weight: 6 },
     { offense: "VIOL DNGROUS DRGS ACT", weight: 2 },
     { offense: "CRMNL DAMAGE 2ND DEGREE", weight: 4 },
     { offense: "MURDER 2ND DEGREE", weight: 1 },
@@ -81,6 +82,7 @@ function buildChoices(correctOffense) {
     { offense: "S/D COCAINE", weight: 1 },
     { offense: "FORG 1ST BEF 7/1/12", weight: 1 },
     { offense: "POSS COCAINE", weight: 3 },
+    { offense: "POSS OF MARIJUANA", weight: 6 },
     { offense: "SEX EXPLOITATION CHILD", weight: 3 },
     { offense: "TRAF METHAMPH 28-199 GM", weight: 3 },
     { offense: "RAPE", weight: 2 },
@@ -88,9 +90,13 @@ function buildChoices(correctOffense) {
     { offense: "DOMESTIC VIOLENCE", weight: 5 },
     { offense: "TRAF COCAINE LESS 200 GM", weight: 1 },
     { offense: "TRAF COCAINE MORE 200 GM", weight: 1 },
+    { offense: "TRAF METHAMPH 400+ GM", weight: 1 },
+    { offense: "TRAF METH LESS 400 GM", weight: 1 },
     { offense: "TERRORIST THREATS & ACTS", weight: 2 },
     { offense: "ANIMAL CRUELTY", weight: 1 },
     { offense: "CHILD ABUSE", weight: 2 },
+    { offense: "MISC CORRECTIONL INST OFF", weight: 3 },
+    { offense: "BURG 2ND AFT 6/30/12", weight: 2 },
     { offense: "KIDNAPPING", weight: 2 }
   ]
     .map(item => ({

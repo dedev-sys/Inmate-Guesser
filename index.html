@@ -155,7 +155,7 @@
 
     function loadOffender(data) {
     // offenderName.textContent = data.name || "---";
-    offenderName.textContent = "INMATE" + Math.floor(Math.random() * (99999 - 11111 + 1)) + 11111;
+    offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
     img.src = data.image || "";
     yobVar.textContent = data.yob || "---";
     raceVar.textContent = data.race || "---";
