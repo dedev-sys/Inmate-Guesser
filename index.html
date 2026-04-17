@@ -26,7 +26,7 @@
         </div>
 
         <div class="offender-name-box">
-            <h2 id="offenderName">OFFENDER NAME HERE</h2>
+            <h2 id="offenderName">LOADING OFFENDER</h2>
         </div>
 
         <div class="image-wrap">
@@ -85,8 +85,8 @@
     const eyeColorVar = document.getElementById("eyeColorVar");
     const hairColorVar = document.getElementById("hairColorVar");
     const releaseDateVar = document.getElementById("releaseDateVar");
-    const rarityscoreVar = document.getElementById("rarityVar");
-    const dangerscoreVar = document.getElementById("dangerVar");
+    const rarityScoreVar = document.getElementById("rarityVar");
+    const dangerScoreVar = document.getElementById("dangerVar");
 
     const scoreVar = document.getElementById("scoreVar");
     const roundVar = document.getElementById("roundVar");
@@ -106,6 +106,190 @@
     let score = 0;
     let round = 1;
     let answeredThisRound = false;
+
+
+
+    // --- RARITY SCORES ----------------------------------------------------
+
+
+    function normalizeOffense(str) {
+      return (str || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+    }
+
+    function normalizeName(str) {
+      return (str || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+    }
+
+    function getOffenderStorageKey(offenderName) {
+      return `offenderStats_${normalizeName(offenderName)}`;
+    }
+
+    // Higher numbers are rarer, but most rolls stay lower.
+    // This returns mostly 1–60, with high values much less common.
+    function weightedRarityRoll1to60() {
+      const r = Math.random();
+      const weighted = Math.pow(r, 2.35); // heavier toward low values
+      return Math.floor(1 + weighted * 59);
+    }
+
+    function generateRarityScore(offense) {
+      const normalized = normalizeOffense(offense);
+
+      // Your known/common crime pool
+      const knownCrimePool = new Set([
+        "BURGLARY",
+        "FRAUD",
+        "ROBBERY",
+        "AGGRAVATED ASSAULT",
+        "ARMED ROBBERY",
+        "MURDER",
+        "ATMPT MURDER",
+        "ARSON",
+        "KIDNAPPING"
+      ]);
+
+      // If the crime is NOT in your pool, force it to be rarer
+      if (!knownCrimePool.has(normalized)) {
+        // guaranteed high rarity band for unknown offenses
+        return Math.floor(70 + Math.random() * 31); // 70–100
+      }
+
+      // Mostly common rarity: 1–60, weighted so high scores are rarer
+      let score = weightedRarityRoll1to60();
+
+      // Tiny bonus jackpot chances to make collectibles more exciting
+      const jackpotRoll = Math.random();
+
+      if (jackpotRoll < 0.015) {
+        score = Math.max(score, Math.floor(85 + Math.random() * 16)); // 85–100
+      } else if (jackpotRoll < 0.06) {
+        score = Math.max(score, Math.floor(61 + Math.random() * 20)); // 61–80
+      }
+
+      return Math.min(score, 100);
+    }
+
+    // puts danger score within +/- 15 points of offense
+    function varyScore(base, range = 15) {
+        const variation = Math.floor(Math.random() * (range * 2 + 1)) - range;
+        let result = base + variation;
+
+        // clamp between 1–100
+        result = Math.max(1, Math.min(100, result));
+
+        return result;
+    }
+
+    function getDangerScore(offense) {
+      const normalized = normalizeOffense(offense);
+
+      // Exact or near-exact mapping first
+      const exactScores = {
+        "BURGLARY": 10,
+        "FRAUD": 5,
+        "ROBBERY": 9,
+        "AGGRAV ASSAULT": 10,
+        "ARMED ROBBERY": 7,
+        "MURDER": 3,
+        "ATMPT MURDER": 2,
+        "ARSON": 2,
+        "DRVNG HABTL VIOLATOR": 8,
+        "HABIT TRAF VIOL/OTHER": 6,
+        "POSS OF FIREARM DUR CRIME": 2,
+        "POSS W INT DIST COCAINE": 4,
+        "POSS W INT DIST METH": 3,
+        "POSS W INT DIST FENTANYL": 2,
+        "POSS W INT DIST MARIJUANA": 6,
+        "VIOL DNGROUS DRGS ACT": 2,
+        "CRMNL DAMAGE 2ND DEGREE": 4,
+        "MURDER 2ND DEGREE": 1,
+        "POSS FIREARM CONVCT FELON": 7,
+        "AGGRAV BATTERY": 8,
+        "BURG BEF 7/1/12": 2,
+        "OBSTR OF LAW ENF OFFICER": 5,
+        "CHILD MOLESTATION": 1,
+        "THEFT BY TAKING": 3,
+        "AGGRAV ASSAULT PEACE OFCR": 3,
+        "VOLUNTARY MANSLAUGHTER": 2,
+        "INVOLUNTARY MANSLAUGHTER": 1,
+        "THEFT BY REC STOLEN PROP": 3,
+        "AGGRAV SEXUAL BATTERY": 2,
+        "POSS NARCOTICS OPIATES": 4,
+        "POSS METHAMPHETAMINE": 3,
+        "S/D COCAINE": 1,
+        "FORG 1ST BEF 7/1/12": 1,
+        "POSS COCAINE": 3,
+        "POSS OF MARIJUANA": 6,
+        "SEX EXPLOITATION CHILD": 3,
+        "TRAF METHAMPH 28-199 GM": 3,
+        "RAPE": 2,
+        "FAMILY VIOLENCE BATTERY": 3,
+        "DOMESTIC VIOLENCE": 5,
+        "TRAF COCAINE LESS 200 GM": 1,
+        "TRAF COCAINE MORE 200 GM": 1,
+        "TRAF METHAMPH 400+ GM": 1,
+        "TRAF METH LESS 400 GM": 1,
+        "TERRORIST THREATS & ACTS": 2,
+        "ANIMAL CRUELTY": 1,
+        "CHILD ABUSE": 2,
+        "MISC CORRECTIONL INST OFF": 3,
+        "BURG 2ND AFT 6/30/12": 2,
+        "KIDNAPPING": 2
+      };
+
+        const base = exactScores[normalized];
+
+        if (base !== undefined) {
+            return varyScore(base, 15);
+        }
+
+        // fallback logic for incase it doesnt
+        // if (normalized.includes("MURDER")) return varyScore(95, 15);
+        // if (normalized.includes("KIDNAP")) return varyScore(88, 15);
+        // if (normalized.includes("ROBBERY")) return varyScore(62, 15);
+        // if (normalized.includes("ASSAULT")) return varyScore(72, 15);
+        // if (normalized.includes("ARSON")) return varyScore(55, 15);
+        // if (normalized.includes("FRAUD")) return varyScore(12, 15);
+
+        // return varyScore(45, 15); // default
+        return Math.floor(1 + Math.random() * 60);
+    }
+
+    function getOrCreateCollectibleStats(offenderName, offense) {
+      const key = getOffenderStorageKey(offenderName);
+      const existing = localStorage.getItem(key);
+
+      if (existing) {
+        try {
+          return JSON.parse(existing);
+        } catch (err) {
+          console.error("Bad local collectible data, regenerating:", err);
+        }
+      }
+
+      const stats = {
+        offenderName: normalizeName(offenderName),
+        offense: normalizeOffense(offense),
+        rarityScore: generateRarityScore(offense),
+        dangerScore: getDangerScore(offense),
+        createdAt: Date.now()
+      };
+
+      localStorage.setItem(key, JSON.stringify(stats));
+      return stats;
+    }
+
+
+
+    // -------------------------------------------------------------------------
+
+
 
     // Replace this with your real loader later
     async function bombaclatt() {
@@ -224,6 +408,13 @@
         btn.classList.add("selected");
     });
     });
+
+
+
+
+
+
+
 
     // Demo pool
     function getMockOffender() {
