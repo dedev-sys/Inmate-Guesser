@@ -255,3 +255,7 @@ app.post("/random-case", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+// ADD RANDOM PEOPLE LIKE DIDDY VAIS AND EPSTEIN, EDP, dr disrespect, clivicular, david, quagmire herbert.
+// Add leaderboard
