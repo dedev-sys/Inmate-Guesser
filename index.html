@@ -29,7 +29,7 @@
             <h2 id="offenderName">LOADING OFFENDER</h2>
         </div>
 
-        <div class="image-wrap">
+        <div class="image-wrap" id="imageWrap">
             <div class="image-loader" id="imageLoader"></div>
             <img class="img" src="" id="img" alt="Offender image">
         </div>
@@ -42,7 +42,7 @@
             <p><strong>WEIGHT:</strong> <span id="weightVar">---</span></p>
             <p><strong>EYE COLOR:</strong> <span id="eyeColorVar">---</span></p>
             <p><strong>HAIR COLOR:</strong> <span id="hairColorVar">---</span></p>
-            <p><strong>MAX POSSIBLE RELEASE DATE:</strong> <span id="releaseDateVar">---</span></p>
+            <p><strong>MAX POSSIBLE RELEASE:</strong> <span id="releaseDateVar">---</span></p>
             <p><strong>RARITY LEVEL:</strong> <span id="rarityVar">---</span></p>
             <p><strong>DANGER SCORE:</strong> <span id="dangerVar">---</span></p>
         </div>
@@ -212,7 +212,8 @@
             "CHILD ABUSE": 75,
             "MISC CORRECTIONL INST OFF": 20,
             "BURG 2ND AFT 6/30/12": 35,
-            "KIDNAPPING": 80
+            "KIDNAPPING": 80,
+            "THEFT MOTORVEH OR PART": 30
         };
         
 
@@ -316,7 +317,8 @@
         "CHILD ABUSE": 65,
         "MISC CORRECTIONL INST OFF": 20,
         "BURG 2ND AFT 6/30/12": 35,
-        "KIDNAPPING": 80
+        "KIDNAPPING": 80,
+        "THEFT MOTORVEH OR PART": 30
       };
 
         const base = exactScores[normalized];
