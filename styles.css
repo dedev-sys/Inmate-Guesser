@@ -295,6 +295,12 @@ body, html {
   box-shadow: 0 16px 32px rgba(49, 88, 216, 0.42);
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
 .result-box {
   min-height: 34px;
   display: flex;

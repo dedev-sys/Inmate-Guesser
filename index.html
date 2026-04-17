@@ -52,10 +52,10 @@
         </div>
 
         <div class="choices-box">
-            <button class="choice-btn" id="choice1">Choice 1</button>
-            <button class="choice-btn" id="choice2">Choice 2</button>
-            <button class="choice-btn" id="choice3">Choice 3</button>
-            <button class="choice-btn" id="choice4">Choice 4</button>
+            <button class="choice-btn" id="choice1">LOADING</button>
+            <button class="choice-btn" id="choice2">LOADING</button>
+            <button class="choice-btn" id="choice3">LOADING</button>
+            <button class="choice-btn" id="choice4">LOADING</button>
         </div>
 
         <div class="bottom-buttons">
@@ -109,6 +109,20 @@
     let score = 0;
     let round = 1;
     let answeredThisRound = false;
+    let isLoading = false;
+
+    // -- BLOCK BUTTONS WHILE LOADING ----------
+
+    function disableAllInputs() {
+        choiceButtons.forEach(btn => btn.disabled = true);
+        submitBtn.disabled = true;
+    }
+
+    function enableAllInputs() {
+        choiceButtons.forEach(btn => btn.disabled = false);
+        submitBtn.disabled = false;
+    }
+
 
     // -- LOADING ANIM ----------
 
@@ -384,12 +398,16 @@
         resultMessage.textContent = "";
         resultMessage.className = "";
         submitBtn.textContent = "SUBMIT GUESS";
+        
+        if (isLoading) return;
+        isLoading = true;
 
         choiceButtons.forEach(btn => {
             btn.classList.remove("selected", "correct", "wrong");
             btn.disabled = false;
         });
 
+        disableAllInputs();   // 🔒 LOCK UI
         showImageLoading();
         img.src = "";
 
@@ -406,7 +424,7 @@
             });
 
             if (!res.ok) {
-            throw new Error("Failed to fetch offender");
+                throw new Error("Failed to fetch offender");
             }
 
             const data = await res.json();
@@ -415,6 +433,8 @@
             console.error(err);
             resultMessage.textContent = "Failed to load offender.";
             resultMessage.className = "bad";
+            isLoading = false;
+            enableAllInputs();
         }
     }
 
@@ -427,9 +447,13 @@
         offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
         img.onload = () => {
             hideImageLoading();
+            enableAllInputs();   // 🔓 UNLOCK UI
+            isLoading = false;
         };
         img.onerror = () => {
             hideImageLoading();
+            enableAllInputs();
+            isLoading = false;
         };
         img.src = data.image || ""; 
         yobVar.textContent = data.yob || "---";
