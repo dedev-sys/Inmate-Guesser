@@ -448,11 +448,11 @@
 
     // Replace this with your real loader later
     async function bombaclatt() {
-    if (!correctOffense || answeredThisRound) {
-        await loadNextOffender();
-    } else {
-        submitGuess();
-    }
+        if (!correctOffense || answeredThisRound) {
+            await loadNextOffender();
+        } else {
+            submitGuess();
+        }
     }
 
     async function loadNextOffender() {
@@ -508,8 +508,75 @@
         }
     }
 
+    function shuffle(arr) {
+        const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+        return copy;
+    }
+
+    function buildChoices(correctOffense) {
+        const pool = [
+            "BURGLARY",
+            "FRAUD",
+            "ROBBERY",
+            "AGGRAV ASSAULT",
+            "ARMED ROBBERY",
+            "MURDER",
+            "ATMPT MURDER",
+            "ARSON",
+            "KIDNAPPING",
+            "DRVNG HABTL VIOLATOR",
+            "HABIT TRAF VIOL/OTHER",
+            "POSS OF FIREARM DUR CRIME",
+            "POSS W INT DIST COCAINE",
+            "POSS W INT DIST METH",
+            "POSS W INT DIST FENTANYL",
+            "POSS W INT DIST MARIJUANA",
+            "VIOL DNGROUS DRGS ACT",
+            "CRMNL DAMAGE 2ND DEGREE",
+            "MURDER 2ND DEGREE",
+            "POSS FIREARM CONVCT FELON",
+            "AGGRAV BATTERY",
+            "BURG BEF 7/1/12",
+            "OBSTR OF LAW ENF OFFICER",
+            "CHILD MOLESTATION",
+            "THEFT BY TAKING",
+            "AGGRAV ASSAULT PEACE OFCR",
+            "VOLUNTARY MANSLAUGHTER",
+            "INVOLUNTARY MANSLAUGHTER",
+            "THEFT BY REC STOLEN PROP",
+            "AGGRAV SEXUAL BATTERY",
+            "POSS NARCOTICS OPIATES",
+            "POSS METHAMPHETAMINE",
+            "S/D COCAINE",
+            "FORG 1ST BEF 7/1/12",
+            "POSS COCAINE",
+            "POSS OF MARIJUANA",
+            "SEX EXPLOITATION CHILD",
+            "TRAF METHAMPH 28-199 GM",
+            "RAPE",
+            "FAMILY VIOLENCE BATTERY",
+            "DOMESTIC VIOLENCE",
+            "TRAF COCAINE LESS 200 GM",
+            "TRAF COCAINE MORE 200 GM",
+            "TRAF METHAMPH 400+ GM",
+            "TRAF METH LESS 400 GM",
+            "TERRORIST THREATS & ACTS",
+            "ANIMAL CRUELTY",
+            "CHILD ABUSE",
+            "MISC CORRECTIONL INST OFF"
+        ].filter(x => x !== correctOffense);
+
+        const wrong = shuffle(pool).slice(0, 3);
+        return shuffle([correctOffense, ...wrong]);
+    }
+
     function loadOffender(data) {
         let collectibleStats;
+        const choices = buildChoices(data.offense);
 
         if (data.custom) {
             const key = getOffenderStorageKey(data.name);
