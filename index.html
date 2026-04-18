@@ -125,21 +125,21 @@
             eyeColor: "BROWN",
             hairColor: "BLACK",
             releaseDate: "2028",
-            offense: "ARMED ROBBERY",
+            offense: "FRAUD",
             custom: true
         },
         {
             name: "INMATE REDACTED",
             image: "images/Vais.png",
-            yob: "2001",
-            race: "BLACK",
-            gender: "FEMALE",
-            height: "5'08''",
-            weight: "140",
-            eyeColor: "GREEN",
+            yob: "2005",
+            race: "JEWISH",
+            gender: "UNKNOWN",
+            height: "3'08''",
+            weight: "540",
+            eyeColor: "BLACK",
             hairColor: "BLACK",
-            releaseDate: "11/09/2040",
-            offense: "MURDER",
+            releaseDate: "DEATH PENALTY",
+            offense: "CAPITAL MURDER & GENOCIDE",
             custom: true
         }
     ];
@@ -543,7 +543,7 @@
 
         correctOffense = data.offense || "";
 
-        
+
         if (data.custom) {
             const choices = buildChoices(data.offense);
 
