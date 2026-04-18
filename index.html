@@ -393,6 +393,10 @@
     }
 
     async function loadNextOffender() {
+        disableAllInputs();   // 🔒 LOCK UI
+        showImageLoading();
+        img.src = "";
+
         answeredThisRound = false;
         selectedChoice = null;
         resultMessage.textContent = "";
@@ -406,10 +410,7 @@
             btn.classList.remove("selected", "correct", "wrong");
             btn.disabled = false;
         });
-
-        disableAllInputs();   // 🔒 LOCK UI
-        showImageLoading();
-        img.src = "";
+        
 
         try {
             const res = await fetch("/random-case", {
@@ -475,39 +476,44 @@
     }
 
     function submitGuess() {
-    if (!selectedChoice) {
-        resultMessage.textContent = "Pick an answer first.";
-        resultMessage.className = "warning";
-        return;
-    }
-
-    answeredThisRound = true;
-
-    choiceButtons.forEach(btn => {
-        btn.disabled = true;
-
-        if (btn.textContent === correctOffense) {
-        btn.classList.add("correct");
+        if (!selectedChoice) {
+            resultMessage.textContent = "Pick an answer first.";
+            resultMessage.className = "warning";
+            return;
         }
 
-        if (btn.textContent === selectedChoice && selectedChoice !== correctOffense) {
-        btn.classList.add("wrong");
+        answeredThisRound = true;
+
+        choiceButtons.forEach(btn => {
+            btn.disabled = true;
+
+            if (btn.textContent === correctOffense) {
+                btn.classList.add("correct");
+            }
+
+            if (btn.textContent === selectedChoice && selectedChoice !== correctOffense) {
+                btn.classList.add("wrong");
+            }
+        });
+
+        if (selectedChoice === correctOffense) {
+            score += 1;
+            scoreVar.textContent = score;
+            resultMessage.textContent = "Correct.";
+            resultMessage.className = "good";
+        } else {
+            resultMessage.textContent = `Wrong. Correct answer: ${correctOffense}`;
+            resultMessage.className = "bad";
         }
-    });
 
-    if (selectedChoice === correctOffense) {
-        score += 1;
-        scoreVar.textContent = score;
-        resultMessage.textContent = "Correct.";
-        resultMessage.className = "good";
-    } else {
-        resultMessage.textContent = `Wrong. Correct answer: ${correctOffense}`;
-        resultMessage.className = "bad";
-    }
+        round += 1;
+        roundVar.textContent = round;
+        submitBtn.textContent = "NEXT ROUND";
 
-    round += 1;
-    roundVar.textContent = round;
-    submitBtn.textContent = "NEXT ROUND";
+        // wait a moment so user sees result, then load next inmate
+        setTimeout(() => {
+            loadNextOffender();
+        }, 1200);
     }
 
     choiceButtons.forEach(btn => {
