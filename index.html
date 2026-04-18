@@ -115,7 +115,7 @@
 
     const customInmates = [
         {
-            name: "INMATE ?",
+            name: "INMATE DIDLER",
             image: "images/youngdiddy.jpg",
             yob: "1969",
             race: "BLACK",
@@ -126,7 +126,25 @@
             hairColor: "BLACK",
             releaseDate: "2028",
             offense: "FRAUD",
-            custom: true
+            custom: true,
+            rarityScore: 70,
+            dangerScore: 40
+        },
+        {
+            name: "JEFFERY",
+            image: "images/Epstein.webp",
+            yob: "1953",
+            race: "WHITE",
+            gender: "MALE",
+            height: "UNKNOWN",
+            weight: "UNKNWON",
+            eyeColor: "BROWN",
+            hairColor: "GRAY",
+            releaseDate: "ESCAPED",
+            offense: "SEX TRAFFICKING OF MINORS",
+            custom: true,
+            rarityScore: 99,
+            dangerScore: 99
         },
         {
             name: "INMATE REDACTED",
@@ -139,8 +157,10 @@
             eyeColor: "BLACK",
             hairColor: "BLACK",
             releaseDate: "DEATH PENALTY",
-            offense: "CAPITAL MURDER & GENOCIDE",
-            custom: true
+            offense: "CPTL GENOCIDE & SEX CRIMES INV MINORS",
+            custom: true,
+            rarityScore: 1,
+            dangerScore: 100
         }
     ];
 
@@ -502,8 +522,8 @@
                 collectibleStats = {
                     offenderName: normalizeName(data.name),
                     offense: normalizeOffense(data.offense),
-                    rarityScore: Math.floor(80 + Math.random() * 21),
-                    dangerScore: getDangerScore(data.offense),
+                    rarityScore: data.rarityScore ?? generateRarityScore(data.offense),
+                    dangerScore: data.dangerScore ?? getDangerScore(data.offense),
                     createdAt: Date.now()
                 };
                 localStorage.setItem(key, JSON.stringify(collectibleStats));
