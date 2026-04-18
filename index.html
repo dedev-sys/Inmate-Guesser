@@ -68,7 +68,6 @@
         </div>
 
     </div>
-    <script src='server.js'></script>
     <script>
 
     document.getElementById("spinButtonID").addEventListener("click", async () => { 
@@ -102,6 +101,8 @@
     document.getElementById("choice4")
     ];
 
+
+
     const submitBtn = document.getElementById("spinButtonID");
 
     let selectedChoice = null;
@@ -113,6 +114,16 @@
 
     // -- BLOCK BUTTONS WHILE LOADING ----------
 
+    function showImageLoading() {
+        if (!imageWrap) return;
+        imageWrap.classList.add("loading");
+    }
+
+    function hideImageLoading() {
+        if (!imageWrap) return;
+        imageWrap.classList.remove("loading");
+    }
+
     function disableAllInputs() {
         choiceButtons.forEach(btn => btn.disabled = true);
         submitBtn.disabled = true;
@@ -121,17 +132,6 @@
     function enableAllInputs() {
         choiceButtons.forEach(btn => btn.disabled = false);
         submitBtn.disabled = false;
-    }
-
-
-    // -- LOADING ANIM ----------
-
-    function showImageLoading() {
-        imageWrap.classList.add("loading");
-    }
-
-    function hideImageLoading() {
-        imageWrap.classList.remove("loading");
     }
 
 
@@ -393,35 +393,30 @@
     }
 
     async function loadNextOffender() {
-        disableAllInputs();   // 🔒 LOCK UI
-        showImageLoading();
-        img.src = "";
-
         answeredThisRound = false;
         selectedChoice = null;
         resultMessage.textContent = "";
         resultMessage.className = "";
         submitBtn.textContent = "SUBMIT GUESS";
-        
-        if (isLoading) return;
-        isLoading = true;
 
         choiceButtons.forEach(btn => {
             btn.classList.remove("selected", "correct", "wrong");
-            btn.disabled = false;
         });
-        
+
+        disableAllInputs();
+        showImageLoading();
+        img.src = "";
 
         try {
             const res = await fetch("/random-case", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ageLow: 18,
-                ageHigh: 90
-            })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    ageLow: 18,
+                    ageHigh: 90
+                })
             });
 
             if (!res.ok) {
@@ -434,29 +429,31 @@
             console.error(err);
             resultMessage.textContent = "Failed to load offender.";
             resultMessage.className = "bad";
-            isLoading = false;
+            hideImageLoading();
             enableAllInputs();
         }
     }
 
     function loadOffender(data) {
-        
         const collectibleStats = getOrCreateCollectibleStats(data.name, data.offense);
-        const releaseDateStat = data.releaseDate;
+        const releaseDateStat = data.releaseDate || "";
 
-        // offenderName.textContent = data.name || "---";
         offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
+
         img.onload = () => {
             hideImageLoading();
-            enableAllInputs();   // 🔓 UNLOCK UI
+            enableAllInputs();
             isLoading = false;
         };
+
         img.onerror = () => {
             hideImageLoading();
             enableAllInputs();
             isLoading = false;
         };
-        img.src = data.image || ""; 
+
+        img.src = data.image || "";
+
         yobVar.textContent = data.yob || "---";
         raceVar.textContent = data.race || "---";
         genderVar.textContent = data.gender || "---";
@@ -464,9 +461,10 @@
         weightVar.textContent = data.weight || "---";
         eyeColorVar.textContent = data.eyeColor || "---";
         hairColorVar.textContent = data.hairColor || "---";
-        releaseDateVar.textContent = releaseDateStat.match(/\d{4}$/)?.[0] || "" || "---";
-        rarityScoreVar.textContent = collectibleStats.rarityScore + " / 100" || "---";
-        dangerScoreVar.textContent = collectibleStats.dangerScore + " / 100" || "---";
+        releaseDateVar.textContent = releaseDateStat.match(/\d{4}$/)?.[0] || "---";
+
+        rarityScoreVar.textContent = `${collectibleStats.rarityScore} / 100`;
+        dangerScoreVar.textContent = `${collectibleStats.dangerScore} / 100`;
 
         correctOffense = data.offense || "";
 
