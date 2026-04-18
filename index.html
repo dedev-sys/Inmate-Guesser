@@ -112,6 +112,49 @@
     let answeredThisRound = false;
     let isLoading = false;
 
+
+    const customInmates = [
+        {
+            name: "INMATE ?",
+            image: "images/youngdiddy.jpg",
+            yob: "1969",
+            race: "BLACK",
+            gender: "MALE",
+            height: "5'10''",
+            weight: "185",
+            eyeColor: "BROWN",
+            hairColor: "BLACK",
+            releaseDate: "2028",
+            offense: "ARMED ROBBERY",
+            custom: true
+        },
+        {
+            name: "INMATE REDACTED",
+            image: "images/Vais.png",
+            yob: "2001",
+            race: "BLACK",
+            gender: "FEMALE",
+            height: "5'08''",
+            weight: "140",
+            eyeColor: "GREEN",
+            hairColor: "BLACK",
+            releaseDate: "11/09/2040",
+            offense: "MURDER",
+            custom: true
+        }
+    ];
+
+    function getRandomCustomInmate() {
+        return customInmates[Math.floor(Math.random() * customInmates.length)];
+    }
+
+    function shouldSpawnCustomInmate() {
+        return Math.random() < 0.12; // 12% chance
+    }
+
+
+
+
     // -- BLOCK BUTTONS WHILE LOADING ----------
 
     function showImageLoading() {
@@ -393,6 +436,9 @@
     }
 
     async function loadNextOffender() {
+        if (isLoading) return;
+        isLoading = true;
+
         answeredThisRound = false;
         selectedChoice = null;
         resultMessage.textContent = "";
@@ -408,22 +454,29 @@
         img.src = "";
 
         try {
-            const res = await fetch("/random-case", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ageLow: 18,
-                    ageHigh: 90
-                })
-            });
+            let data;
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch offender");
+            if (customInmates.length > 0 && shouldSpawnCustomInmate()) {
+                data = getRandomCustomInmate();
+            } else {
+                const res = await fetch("/random-case", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        ageLow: 18,
+                        ageHigh: 90
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to fetch offender");
+                }
+
+                data = await res.json();
             }
 
-            const data = await res.json();
             loadOffender(data);
         } catch (err) {
             console.error(err);
@@ -431,14 +484,36 @@
             resultMessage.className = "bad";
             hideImageLoading();
             enableAllInputs();
+            isLoading = false;
         }
     }
 
     function loadOffender(data) {
-        const collectibleStats = getOrCreateCollectibleStats(data.name, data.offense);
-        const releaseDateStat = data.releaseDate || "";
+        let collectibleStats;
 
+        if (data.custom) {
+            const key = getOffenderStorageKey(data.name);
+            const existing = localStorage.getItem(key);
+
+            if (existing) {
+                collectibleStats = JSON.parse(existing);
+            } else {
+                collectibleStats = {
+                    offenderName: normalizeName(data.name),
+                    offense: normalizeOffense(data.offense),
+                    rarityScore: Math.floor(80 + Math.random() * 21),
+                    dangerScore: getDangerScore(data.offense),
+                    createdAt: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(collectibleStats));
+            }
+        } else {
+            collectibleStats = getOrCreateCollectibleStats(data.name, data.offense);
+        }
+
+        const releaseDateStat = data.releaseDate || "";
         offenderName.textContent = "INMATE #" + String(Math.floor(100000 + Math.random() * 900000));
+        
 
         img.onload = () => {
             hideImageLoading();
@@ -468,8 +543,18 @@
 
         correctOffense = data.offense || "";
 
+        
+        if (data.custom) {
+            const choices = buildChoices(data.offense);
+
+            // make one wrong answer obviously bait sometimes 😈
+            if (Math.random() < 0.3) {
+                choices[0] = "TAX EVASION";
+            }
+        }
+
         choiceButtons.forEach((btn, i) => {
-            btn.textContent = data.choices[i] || `Choice ${i + 1}`;
+            btn.textContent = choices[i];
         });
     }
 
