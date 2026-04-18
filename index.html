@@ -678,11 +678,6 @@
         round += 1;
         roundVar.textContent = round;
         submitBtn.textContent = "NEXT ROUND";
-
-        // wait a moment so user sees result, then load next inmate
-        setTimeout(() => {
-            loadNextOffender();
-        }, 1200);
     }
 
     choiceButtons.forEach(btn => {
