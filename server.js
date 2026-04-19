@@ -98,7 +98,8 @@ function buildChoices(correctOffense) {
     { offense: "MISC CORRECTIONL INST OFF", weight: 3 },
     { offense: "BURG 2ND AFT 6/30/12", weight: 2 },
     { offense: "KIDNAPPING", weight: 2 },
-    { offense: "THEFT MOTORVEH OR PART", weight: 6 }
+    { offense: "THEFT MOTORVEH OR PART", weight: 6 },
+    { offense: "THEFT CREDIT CARD", weight: 1 }
   ]
     .map(item => ({
       offense: normalizeOffense(item.offense),
